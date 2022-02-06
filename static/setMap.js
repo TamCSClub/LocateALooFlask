@@ -2,6 +2,7 @@ let marks;
 let starbucksLocations = [];
 let chevronLocations = [];
 let cvsLocations = [];
+let markerLocations = [];
 
 let starbucksIcon = L.icon({
     iconUrl: "static/starbucks.png",
@@ -45,6 +46,13 @@ function loadLoos() {
   loadStarbucks();
   loadChevron();
   loadCVS();
+
+  if(markerLocations.length > 100) {
+    for(var i = 0; i < markerLocations.length - 100; i++) {
+      map.removeLayer(markerLocations[0]);
+      markerLocations.shift();
+    }
+  }
   
   for(var i = 0; i < marks.length; i++) {
     let temp = marks[i];
@@ -194,6 +202,7 @@ function addImportedSpot(x,z,name) {
   var marker = L.marker([x,z],{icon: storeIcon}).addTo(map);
 
   marker.bindPopup("<b>"+name+"</b><br>Imported location");
+  markerLocations.push(marker);
 }
 
 
