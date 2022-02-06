@@ -4,19 +4,19 @@ let chevronLocations = [];
 let cvsLocations = [];
 
 let starbucksIcon = L.icon({
-    iconUrl: "static/marker-icon-green.png",
-    iconAnchor: [10.5, 41],
+    iconUrl: "static/starbucks.png",
+    iconAnchor: [12.5, 25],
     popupAnchor: [0,-41]
   });
 
 let chevronIcon = L.icon({
-    iconUrl: "static/marker-icon-yellow.png",
+    iconUrl: "static/chevron.png",
     iconAnchor: [10.5, 41],
     popupAnchor: [0,-41]
   });
 
 let cvsIcon = L.icon({
-    iconUrl: "static/marker-icon-red.png",
+    iconUrl: "static/target.png",
     iconAnchor: [10.5, 41],
     popupAnchor: [0,-41]
   });
