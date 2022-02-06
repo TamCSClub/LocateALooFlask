@@ -1,6 +1,25 @@
 let marks;
 let starbucksLocations = [];
+let chevronLocations = [];
+let cvsLocations = [];
 
+let starbucksIcon = L.icon({
+    iconUrl: "static/marker-icon-green.png",
+    iconAnchor: [10.5, 41],
+    popupAnchor: [0,-41]
+  });
+
+let chevronIcon = L.icon({
+    iconUrl: "static/marker-icon-yellow.png",
+    iconAnchor: [10.5, 41],
+    popupAnchor: [0,-41]
+  });
+
+let cvsIcon = L.icon({
+    iconUrl: "static/marker-icon-red.png",
+    iconAnchor: [10.5, 41],
+    popupAnchor: [0,-41]
+  });
 
 
 fetch('/getloos')
@@ -24,7 +43,8 @@ fetch('/getloos')
 function loadLoos() {
   
   loadStarbucks();
-  //circle.setRadius(1300/map.getZoom())
+  loadChevron();
+  loadCVS();
   
   for(var i = 0; i < marks.length; i++) {
     let temp = marks[i];
@@ -41,7 +61,7 @@ function loadLoos() {
      if(temp[4] === 1) {
      if(x <= urx && x >= brx) {
        if(y <= ury && y >= bry) {
-        addSpot(x,y,temp[2],temp[3], temp[5]);
+        addSpot(x,y,temp[2],temp[3], temp[5],temp[6]);
         marks[i][4] = 0;
         
        }
@@ -54,7 +74,7 @@ function loadLoos() {
 }
 
 function loadStarbucks() {
-  let url = "https://api.mapbox.com/geocoding/v5/mapbox.places/starbucks.json?type=poi&proximity=".concat(String(map.getCenter().lng.toFixed(2)), ",", String(map.getCenter().lat.toFixed(2)), "&access_token=pk.eyJ1IjoidGFtY3NtbCIsImEiOiJja3phaGRjc3gyMTJjMnZwNHl0eDU1NGN5In0.HaXGQzds4czES1TZdYpN8Q")
+  let url = "https://api.mapbox.com/geocoding/v5/mapbox.places/starbucks.json?type=poi&proximity=".concat(String(map.getCenter().lng.toFixed(2)), ",", String(map.getCenter().lat.toFixed(2)), "&access_token=pk.eyJ1IjoidGFtY3NtbCIsImEiOiJja3phaGRjc3gyMTJjMnZwNHl0eDU1NGN5In0.HaXGQzds4czES1TZdYpN8Q");
 
   fetch(url).then(function (response) {
   return response.json();
@@ -66,7 +86,6 @@ function loadStarbucks() {
   for(var i = 0; i < loo.features.length; i++) {
     for(var j = 0; j < starbucksLocations.length; j++) {
       if(starbucksLocations[j] === loo.features[i].id) {
-        console.log("broke");
         break;
       }
       if(j === starbucksLocations.length-1) {
@@ -77,6 +96,56 @@ function loadStarbucks() {
   }
 });
 }
+
+function loadChevron() {
+  let url = "https://api.mapbox.com/geocoding/v5/mapbox.places/chevron.json?type=poi&proximity=".concat(String(map.getCenter().lng.toFixed(2)), ",", String(map.getCenter().lat.toFixed(2)), "&access_token=pk.eyJ1IjoidGFtY3NtbCIsImEiOiJja3phaGRjc3gyMTJjMnZwNHl0eDU1NGN5In0.HaXGQzds4czES1TZdYpN8Q");
+
+  fetch(url).then(function (response) {
+  return response.json();
+}).then(function (loo) {
+  //console.log(loo.features[0]);
+  if(chevronLocations.length === 0) {
+    chevronLocations.push(loo.features[0].id);
+  }
+  for(var i = 0; i < loo.features.length; i++) {
+    for(var j = 0; j < chevronLocations.length; j++) {
+      if(chevronLocations[j] === loo.features[i].id) {
+        break;
+      }
+      if(j === chevronLocations.length-1) {
+        chevronLocations.push(loo.features[i].id);
+        addImportedSpot(loo.features[i].center[1], loo.features[i].center[0], "Chevron");
+      }
+    }
+  }
+});
+}
+
+function loadCVS() {
+  let url = "https://api.mapbox.com/geocoding/v5/mapbox.places/target.json?type=poi&proximity=".concat(String(map.getCenter().lng.toFixed(2)), ",", String(map.getCenter().lat.toFixed(2)), "&access_token=pk.eyJ1IjoidGFtY3NtbCIsImEiOiJja3phaGRjc3gyMTJjMnZwNHl0eDU1NGN5In0.HaXGQzds4czES1TZdYpN8Q");
+
+  fetch(url).then(function (response) {
+  return response.json();
+}).then(function (loo) {
+  
+  if(cvsLocations.length === 0) {
+    cvsLocations.push(loo.features[0].id);
+  }
+  for(var i = 0; i < loo.features.length; i++) {
+    for(var j = 0; j < cvsLocations.length; j++) {
+      if(cvsLocations[j] === loo.features[i].id) {
+        break;
+      }
+      if(j === cvsLocations.length-1) {
+        cvsLocations.push(loo.features[i].id);
+        addImportedSpot(loo.features[i].center[1], loo.features[i].center[0], "Target");
+      }
+    }
+  }
+});
+}
+
+
 
 let myPosition = {lat: 0, long: 0};
 let map;
@@ -104,19 +173,25 @@ navigator.geolocation.getCurrentPosition((position) => {
 
 
 
-function addSpot(x,z,name,rating, id) {
+function addSpot(x,z,name,rating, id, comments) {
 var marker = L.marker([x,z]).addTo(map);
-marker.bindPopup("<b>"+name+"</b><br>Rating: "+rating+"<br><a href=\"/reporting?id=" + id + "\"><small><small>report listing</small></small></a> | <button class=\"open-button\" onclick=\"openForm()\"><small><small>Leave rating</small></small></button><div class=\"form-popup\" id=\"myForm\" style=\"display :none;\"> <br></br><form action=\"/rateloo\" method = \"post\"  class=\"form-container\" style=\"text-align: center; \"> <div class=\'rate-form-group\'><label for=\"rating\"><b>Rating</b></label> <input type=\"number\" name=\"rating\" min = \"1\" max = \"10\" required><br></div><div class=\'rate-form-group\'><button type=\"submit\" class=\"btn btn-outline-dark\" style=\"padding: 1.5px 4px;\">Enter</button></div><padding> </padding><div class=\'rate-form-group\'> <button type=\"button\" class=\"btn cancel\" onclick=\"closeForm()\">Cancel</button></div> <input type = \"hidden\" name=\"id\" value=\"" + id + "\"></input></form> </div>")
+marker.bindPopup("<b>"+name+"</b><br>Rating: "+rating+"<br><a href=\"/reporting?id=" + id + "\"><small><small>report listing</small></small></a> | <button class=\"open-button\" onclick=\"openForm()\"><small><small>Leave rating</small></small></button><div class=\"form-popup\" id=\"myForm\" style=\"display :none;\"><form action=\"/rateloo\" method = \"post\"  class=\"form-container\" style=\"text-align: center; \"> <div class=\'rate-form-group\'><label for=\"rating\"><b>Rating</b></label> <input type=\"number\" name=\"rating\" min = \"1\" max = \"10\" required></div><div class=\'rate-form-group\'><button type=\"submit\" class=\"btn btn-outline-dark\" style=\"padding: 1.5px 4px;\">Enter</button></div><padding> </padding><div class=\'rate-form-group\'> <button type=\"button\" class=\"btn cancel\" onclick=\"closeForm()\">Cancel</button></div> <input type = \"hidden\" name=\"id\" value=\"" + id + "\"></input></form> </div>")
 }
 
 
 function addImportedSpot(x,z,name) {
-  let starbucksIcon = L.icon({
-    iconUrl: "static/marker-icon-green.png",
-    // iconAnchor: [x-0.0001, z+0.0001]
-  });
+  let storeIcon;
+  if(name === 'Starbucks') {
+    storeIcon = starbucksIcon;
+  }
+  else if(name === 'Chevron') {
+    storeIcon = chevronIcon;
+  }
+  else if(name === 'Target') {
+    storeIcon = cvsIcon;
+  }
 
-  var marker = L.marker([x,z],{icon: starbucksIcon}).addTo(map);
+  var marker = L.marker([x,z],{icon: storeIcon}).addTo(map);
 
   marker.bindPopup("<b>"+name+"</b><br>Imported location");
 }
